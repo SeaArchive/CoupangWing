@@ -11,6 +11,9 @@
 
 - 화면 진입 파일을 저장소 루트 `index.html`로 이동하고 서버·Docker·정적 자원 경로 반영.
 
+- Render 싱가포르 Starter 서버와 1GB 영속 디스크 배포 완료: https://coupang-wing-bridge.onrender.com/
+- 비밀번호 최소 길이를 5자로 변경. 기호 필수 조건 없음.
+
 ## 다음 단계
 
 1. Node 24 서버 배포 및 영속 디스크/ENCRYPTION_KEY/HTTPS 설정.

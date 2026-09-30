@@ -16,8 +16,9 @@ test('이메일 인증, CSRF, 계정별 HTTP 설정/로그 격리 및 비밀키 
   }
   try {
     assert.equal((await call('state')).status, 401);
-    const a = await call('register', 'POST', { email: 'a@example.com', password: 'example-password-123' }); const aa = { cookie: a.cookie, csrf: a.data.csrf }; assert.equal(a.status, 201);
-    const b = await call('register', 'POST', { email: 'b@example.com', password: 'example-password-456' }); const bb = { cookie: b.cookie, csrf: b.data.csrf };
+    assert.equal((await call('register', 'POST', { email: 'short@example.com', password: '1234' })).status, 400);
+    const a = await call('register', 'POST', { email: 'a@example.com', password: 'abcde' }); const aa = { cookie: a.cookie, csrf: a.data.csrf }; assert.equal(a.status, 201);
+    const b = await call('register', 'POST', { email: 'b@example.com', password: '12345' }); const bb = { cookie: b.cookie, csrf: b.data.csrf };
     assert.equal((await call('settings', 'PUT', {}, { cookie: a.cookie })).status, 403);
     const saved = await call('settings', 'PUT', { settings: { spreadsheetId: 'private-sheet-12345', write: { tab: 'a' }, read: { tab: 'a' } }, credentials: { COUPANG_VENDOR_ID: 'A12345', COUPANG_ACCESS_KEY: 'private-access', COUPANG_SECRET_KEY: 'private-secret' } }, aa); assert.equal(saved.status, 200);
     const aState = await call('state', 'GET', null, aa); const bState = await call('state', 'GET', null, bb);
@@ -27,6 +28,6 @@ test('이메일 인증, CSRF, 계정별 HTTP 설정/로그 격리 및 비밀키 
     const bLogs = await call('logs', 'GET', null, bb); assert.ok(bLogs.data.logs.every(l => !l.message.includes('데모')));
     assert.equal((await call('logout', 'POST', {}, aa)).status, 200); assert.equal((await call('state', 'GET', null, aa)).status, 401);
     assert.equal((await call('login', 'POST', { email: 'a@example.com', password: 'wrong-password' })).status, 401);
-    assert.equal((await call('login', 'POST', { email: 'a@example.com', password: 'example-password-123' })).status, 200);
+    assert.equal((await call('login', 'POST', { email: 'a@example.com', password: 'abcde' })).status, 200);
   } finally { await app.close(); await rm(dir, { recursive: true, force: true }); }
 });

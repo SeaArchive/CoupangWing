@@ -75,7 +75,7 @@ async function refresh(initial = false) {
 }
 $('auth-toggle').addEventListener('click', () => {
   register = !register; $('auth-title').textContent = register ? '이메일로 계정 만들기' : '이메일로 로그인';
-  $('auth-help').textContent = register ? '비밀번호는 12자 이상으로 입력하세요.' : '내 계정의 연동 설정과 작업 기록을 엽니다.';
+  $('auth-help').textContent = register ? '비밀번호는 5자 이상으로 입력하세요. 기호는 선택 사항입니다.' : '내 계정의 연동 설정과 작업 기록을 엽니다.';
   $('auth-submit').textContent = register ? '계정 만들기 ↗' : '로그인 ↗';
   $('auth-toggle').textContent = register ? '이미 계정이 있으신가요? 로그인' : '처음이신가요? 계정 만들기'; $('auth-error').textContent = '';
   $('password').autocomplete = register ? 'new-password' : 'current-password';

@@ -9,7 +9,7 @@ export function normalizeEmail(email) {
   return value;
 }
 export async function passwordHash(password) {
-  if (typeof password !== 'string' || password.length < 12 || password.length > 200) throw new Error('비밀번호는 12~200자로 입력하세요.');
+  if (typeof password !== 'string' || password.length < 5 || password.length > 200) throw new Error('비밀번호는 5~200자로 입력하세요.');
   const salt = randomBytes(16).toString('hex');
   return salt + ':' + Buffer.from(await derive(password, salt, 64)).toString('hex');
 }
