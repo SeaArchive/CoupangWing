@@ -1,0 +1,20 @@
+# A persistent, always-on server is required. This blueprint uses a paid plan.
+services:
+  - type: web
+    name: coupang-wing-bridge
+    runtime: docker
+    plan: starter
+    healthCheckPath: /healthz
+    disk:
+      name: bridge-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: APP_ORIGIN
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: ALLOW_REGISTRATION
+        value: "true"

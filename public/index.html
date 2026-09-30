@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CoupangWing — 주문 연동 콘솔</title>
+  <meta name="description" content="쿠팡 주문과 Google Sheets를 연결하는 개인 연동 콘솔">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<div id="auth-view" class="auth-shell" hidden>
+  <section class="auth-brand">
+    <a class="brand" href="/"><span class="brand-mark">CW</span> COUPANG WING <span class="brand-sub">/ BRIDGE</span></a>
+    <div class="auth-title"><span class="eyebrow">ORDER OPERATIONS / 01</span><h1>주문에서 배송까지.<br><span>하나의 연결.</span></h1><p>쿠팡 주문과 Google Sheets를 연결하고,<br>모든 작업의 흐름을 확인하세요.</p></div>
+    <div class="auth-bottom"><span>COUPANG ↔ GOOGLE SHEETS</span><span>PRIVATE CONSOLE</span></div>
+  </section>
+  <section class="auth-panel"><div class="auth-form-wrap">
+    <span class="eyebrow">YOUR WORKSPACE</span><h2 id="auth-title">이메일로 로그인</h2><p id="auth-help">내 계정의 연동 설정과 작업 기록을 엽니다.</p>
+    <form id="auth-form"><label>이메일<input type="email" id="email" autocomplete="username" placeholder="you@example.com" maxlength="254" required></label><label>비밀번호<input type="password" id="password" autocomplete="current-password" placeholder="비밀번호 입력" minlength="12" maxlength="200" required></label><button class="button primary full" type="submit" id="auth-submit">로그인 <span>↗</span></button></form>
+    <p id="auth-error" class="error-message" role="alert"></p><button id="auth-toggle" class="text-button">처음이신가요? 계정 만들기</button>
+    <div class="auth-note"><span class="small-tag">PERSONAL</span> API 키, 시트 설정, 로그는 계정별로 관리됩니다.</div>
+  </div></section>
+</div>
+<div id="dashboard" hidden>
+  <header class="topbar"><a class="brand" href="/"><span class="brand-mark">CW</span> COUPANG WING <span class="brand-sub">/ BRIDGE</span></a><div class="account"><span id="account-email"></span><button id="logout" class="text-button">로그아웃 ↗</button></div></header>
+  <main>
+    <section class="page-heading"><div><span class="eyebrow">OPERATIONS CONSOLE</span><h1>연동 콘솔<span class="title-dot">.</span></h1><p>주문을 가져오고, 운송장을 보내고, 작업을 기록합니다.</p></div><div class="mode-badge" id="mode-badge">DEMO MODE</div></section>
+    <section class="control-panel" aria-label="자동 연동 상태"><div class="control-info"><div class="status-line"><span class="status-indicator" id="status-dot"></span><span id="status-label">대기 중</span><span class="mono" id="worker-label">IDLE</span></div><h2 id="control-title">자동 연동을 시작할 준비</h2><p id="control-description">시작 버튼을 누르면 서버가 정해진 간격으로 작업합니다.</p><div class="schedule"><span>다음 실행 <strong id="next-run">—</strong></span><span>최근 실행 <strong id="last-run">—</strong></span></div></div><div class="control-actions"><button id="toggle-worker" class="button primary">자동 연동 시작 <span>↗</span></button><button id="run-once" class="button secondary">지금 한 번 실행</button></div></section>
+    <div id="demo-notice" class="notice"><span class="small-tag">DEMO</span><span>현재는 화면과 작업 흐름을 확인하는 데모 모드입니다. 실제 주문과 송장을 전송하지 않습니다.</span></div>
+    <div id="missing-notice" class="notice warning" hidden></div>
+    <section class="metrics" aria-label="연동 통계"><article><span class="eyebrow">COLLECTED ITEMS</span><div><strong id="orders-count">0</strong><span>수집 품목</span></div></article><article><span class="eyebrow">WAYBILLS SENT</span><div><strong id="completed-count">0</strong><span>등록 확인</span></div></article><article><span class="eyebrow">REVIEW REQUIRED</span><div><strong id="uncertain-count">0</strong><span>확인 필요</span></div></article><article><span class="eyebrow">SYNC INTERVAL</span><div><strong id="interval-count">5</strong><span>분마다 실행</span></div></article></section>
+    <nav class="tabs" aria-label="콘솔 화면"><button class="tab active" data-tab="logs" aria-selected="true">작업 로그 <span id="log-count">00</span></button><button class="tab" data-tab="settings" aria-selected="false">연동 설정 <span>↗</span></button></nav>
+    <section id="logs-panel"><div class="section-toolbar"><div><h2>실행 기록</h2><p>이 계정에서 실행한 작업만 표시됩니다.</p></div><div class="log-controls"><select id="log-filter" aria-label="로그 유형"><option value="all">모든 기록</option><option value="error">오류</option><option value="warning">확인 필요</option><option value="success">완료</option></select><button id="refresh-logs" class="button compact">새로고침 ↻</button></div></div><div class="log-table"><div class="log-table-head"><span>TIME / 시간</span><span>STATUS / 상태</span><span>PROCESS / 작업</span><span>MESSAGE / 기록</span></div><div id="log-list" role="log" aria-label="작업 기록"></div><div class="empty-state" id="empty-logs"><span class="empty-icon">↔</span><h3>작업 기록이 여기에 쌓입니다.</h3><p>자동 연동을 시작하거나 지금 한 번 실행하세요.</p></div></div><div class="log-footer"><span class="mono">ACCOUNT-SCOPED LOGS</span><span id="refresh-status">5초마다 상태 갱신</span></div></section>
+    <section id="settings-panel" hidden><form id="settings-form">
+      <div class="section-toolbar"><div><h2>나의 연동 설정</h2><p>설정을 수정하려면 자동 연동을 중지하세요. 빈 키 입력란은 저장된 값을 유지합니다.</p></div><button type="submit" class="button primary compact" id="save-settings">설정 저장 ↗</button></div>
+      <div class="settings-card"><div class="settings-label"><span class="eyebrow">01 / CONNECTION</span><h3>쿠팡 연결</h3><p>API 키는 암호화해 저장합니다.</p></div><div class="form-grid"><label>실행 모드<select id="setting-mode"><option value="demo">데모 — 실제 전송 없음</option><option value="live">실제 연동</option></select></label><label>업체코드<input id="vendor-id" placeholder="A00012345" autocomplete="off"></label><label>Access Key <span id="access-saved"></span><input id="access-key" type="password" placeholder="새 키를 입력하려면 작성" autocomplete="new-password"></label><label>Secret Key <span id="secret-saved"></span><input id="secret-key" type="password" placeholder="새 키를 입력하려면 작성" autocomplete="new-password"></label></div></div>
+      <div class="settings-card"><div class="settings-label"><span class="eyebrow">02 / GOOGLE SHEETS</span><h3>시트 연결</h3><p>서비스 계정 이메일에 시트를 편집자로 공유하세요.</p></div><div class="form-grid"><label class="wide">Google Sheet ID<input id="sheet-id" placeholder="시트 URL의 /d/와 /edit 사이 ID" autocomplete="off"></label><label>주문 기록 탭<input id="write-tab" placeholder="탭 이름"></label><label>운송장 확인 탭<input id="read-tab" placeholder="같은 탭이면 동일한 이름"></label><label class="wide">Google 서비스 계정 JSON <span id="google-saved"></span><textarea id="google-json" rows="3" placeholder="키 파일의 JSON 내용을 붙여 넣으세요. 저장 후 표시하지 않습니다." spellcheck="false" autocomplete="off"></textarea><small id="service-email">아직 연결된 서비스 계정이 없습니다.</small></label></div></div>
+      <div class="settings-card"><div class="settings-label"><span class="eyebrow">03 / SYNC RULES</span><h3>실행 조건</h3><p>공급자의 입력과 셀 색상은 유지됩니다.</p></div><div class="form-grid"><label>실행 간격 (초)<input id="interval" type="number" min="60" max="3600" value="300"></label><label>최근 주문 조회 (일)<input id="lookback" type="number" min="1" max="30" value="7"></label><label>보내는분 성명<input id="shop-name" placeholder="미입력 시 쿠팡 판매자명"></label><label>쓰기 시작 행<input id="start-row" type="number" min="1" max="990000" value="55"></label><label>관리할 최대 행 수<input id="max-rows" type="number" min="1" max="10000" value="10000"></label><label>운송장 읽기 범위<input id="read-range" placeholder="A55:AA10054"></label></div></div>
+      <details class="mapping-details"><summary>열 배치 확인 · 변경 <span>+</span></summary><div class="mapping-note">A~L 주문 정보 / M 주문 상태 / N~Z 공급자 영역. O 택배사 · P 운송장번호를 읽습니다. AA는 주문을 정확히 연결하는 식별키 열입니다. AA열은 숨겨도 됩니다.</div><h3>주문 기록 열</h3><div id="write-mapping" class="mapping-grid"></div><h3>운송장 읽기 열</h3><div id="read-mapping" class="mapping-grid"></div></details>
+      <p id="settings-feedback" class="feedback" role="status"></p>
+    </form></section>
+    <footer><span class="brand-footer">CW / COUPANG WING BRIDGE</span><span>서버가 작업을 이어갑니다. 브라우저를 닫아도 실행은 계속됩니다.</span></footer>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+</body></html>
