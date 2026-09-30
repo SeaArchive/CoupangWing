@@ -11,7 +11,7 @@ async function api(path, method = 'GET', body) {
   }
   return result;
 }
-function showAuth() { shownAuth = true; state = null; logs = []; lastLog = 0; $('auth-view').hidden = false; $('dashboard').hidden = true; }
+function showAuth() { shownAuth = true; for (const id of ['access-key', 'secret-key', 'google-json']) displayStoredSecret(id, false); state = null; logs = []; lastLog = 0; $('auth-view').hidden = false; $('dashboard').hidden = true; }
 function showDashboard() { shownAuth = false; $('auth-view').hidden = true; $('dashboard').hidden = false; }
 function formatDate(value) { return value ? new Date(value).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Seoul' }) : '—'; }
 function renderState(s) {
@@ -42,11 +42,31 @@ function mapping(container, fields, columns, section) {
     label.append(input); $(container).append(label);
   }
 }
+function displayStoredSecret(id, saved) {
+  const input = $(id);
+  input.dataset.saved = saved ? 'true' : 'false';
+  input.dataset.stored = saved ? 'true' : 'false';
+  input.value = saved ? '••••••••' : '';
+}
+function secretInputValue(id) {
+  return $(id).dataset.stored === 'true' ? '' : $(id).value;
+}
+for (const id of ['access-key', 'secret-key', 'google-json']) {
+  $(id).addEventListener('focus', () => {
+    if ($(id).dataset.stored === 'true') { $(id).value = ''; $(id).dataset.stored = 'false'; }
+  });
+  $(id).addEventListener('input', () => { $(id).dataset.stored = 'false'; });
+  $(id).addEventListener('blur', () => {
+    if (!$(id).value && $(id).dataset.saved === 'true') displayStoredSecret(id, true);
+  });
+}
 function renderSettings(s) {
   const config = s.settings, c = s.credentials;
   const values = { 'setting-mode': config.mode, 'vendor-id': c.vendorId, 'sheet-id': config.spreadsheetId, 'write-tab': config.write.tab, 'read-tab': config.read.tab, 'interval': config.intervalSeconds, 'lookback': config.lookbackDays, 'shop-name': config.shopName, 'start-row': config.write.startRow, 'max-rows': config.write.maxRows, 'read-range': config.read.range };
   for (const [id, value] of Object.entries(values)) $(id).value = value;
-  for (const id of ['access-key', 'secret-key', 'google-json']) $(id).value = '';
+  displayStoredSecret('access-key', c.accessKeySaved);
+  displayStoredSecret('secret-key', c.secretKeySaved);
+  displayStoredSecret('google-json', c.googleSaved);
   $('access-saved').textContent = c.accessKeySaved ? '저장됨' : '미설정'; $('secret-saved').textContent = c.secretKeySaved ? '저장됨' : '미설정'; $('google-saved').textContent = c.googleSaved ? '저장됨' : '미설정';
   $('service-email').textContent = c.serviceEmail ? '시트를 편집자로 공유할 주소: ' + c.serviceEmail : '아직 연결된 서비스 계정이 없습니다.';
   mapping('write-mapping', s.fields, config.write.columns, 'write'); mapping('read-mapping', s.readFields, config.read.columns, 'read');
@@ -99,7 +119,7 @@ $('settings-form').addEventListener('submit', async event => {
   event.preventDefault(); const feedback = $('settings-feedback'); feedback.textContent = '저장 중…'; feedback.classList.remove('error-message');
   const settings = { mode: $('setting-mode').value, spreadsheetId: $('sheet-id').value.trim(), shopName: $('shop-name').value, intervalSeconds: Number($('interval').value), lookbackDays: Number($('lookback').value), write: { tab: $('write-tab').value, startRow: Number($('start-row').value), maxRows: Number($('max-rows').value), columns: {} }, read: { tab: $('read-tab').value, range: $('read-range').value, columns: {} } };
   for (const input of document.querySelectorAll('[data-section]')) settings[input.dataset.section].columns[input.dataset.key] = input.value;
-  const credentials = { COUPANG_VENDOR_ID: $('vendor-id').value, COUPANG_ACCESS_KEY: $('access-key').value, COUPANG_SECRET_KEY: $('secret-key').value, GOOGLE_SERVICE_ACCOUNT_JSON: $('google-json').value };
+  const credentials = { COUPANG_VENDOR_ID: $('vendor-id').value, COUPANG_ACCESS_KEY: secretInputValue('access-key'), COUPANG_SECRET_KEY: secretInputValue('secret-key'), GOOGLE_SERVICE_ACCOUNT_JSON: secretInputValue('google-json') };
   try { await api('settings', 'PUT', { settings, credentials }); await refresh(true); feedback.textContent = '설정을 저장했습니다.'; }
   catch (error) { feedback.textContent = error.message; feedback.classList.add('error-message'); }
 });
