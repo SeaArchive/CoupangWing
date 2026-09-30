@@ -53,7 +53,7 @@ export function createApplication(env = process.env) {
       const url = new URL(req.url, origin); const path = url.pathname;
       if (path === '/healthz') return json(res, 200, { ok: true });
       if (!path.startsWith('/api/')) {
-        const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/favicon.svg': ['favicon.svg', 'image/svg+xml'] };
+        const files = { '/': ['../index.html', 'text/html'], '/index.html': ['../index.html', 'text/html'], '/public/app.js': ['app.js', 'text/javascript'], '/public/style.css': ['style.css', 'text/css'], '/public/favicon.svg': ['favicon.svg', 'image/svg+xml'] };
         if (req.method !== 'GET' || !files[path]) return json(res, 404, { error: '페이지를 찾을 수 없습니다.' });
         const [name, type] = files[path]; const file = await readFile(publicDir + name);
         res.writeHead(200, { 'Content-Type': `${type}; charset=utf-8`, 'Cache-Control': 'no-cache' }); return res.end(file);

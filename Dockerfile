@@ -1,6 +1,6 @@
 FROM node:24-bookworm-slim
 WORKDIR /app
-COPY --chown=node:node package.json ./
+COPY --chown=node:node package.json index.html ./
 COPY --chown=node:node src ./src
 COPY --chown=node:node public ./public
 RUN mkdir /app/data && chown node:node /app/data
